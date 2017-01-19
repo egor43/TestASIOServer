@@ -13,13 +13,13 @@ int main()
     boost::asio::io_service io_service; //Должен быть как минимум один такой объект
     std::cout << "io_service - OK" << std::endl;
 
-    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(),2101)); //Прослушиватель для ожидания подкючения и его обработки. Приимает параметры: объект типа io_service и что собственно слушать (любой адрес и порт 444)
+    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(),2102)); //Прослушиватель для ожидания подкючения и его обработки. Приимает параметры: объект типа io_service и что собственно слушать (любой адрес и порт 444)
     std::cout << "acceptor - OK" << std::endl;
 
     tcp::socket socket(io_service); //Создаем подключение, которое будет в ВЕЧНОМ цикле крутиться и ждать подключение клиента.
     std::cout << "socket - OK" << std::endl;
 
-    std::ifstream in_file_stream("test", std::ios::binary); //Создаем файловый поток на чтение файла (бинарно).
+    std::ifstream in_file_stream("test.txt", std::ios::binary); //Создаем файловый поток на чтение файла (бинарно).
     std::cout << "File_Stream - OK" << std::endl;
 
     std::vector <char> File_Buffer; //Создаем буфер для файла;
