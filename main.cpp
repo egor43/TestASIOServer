@@ -1,8 +1,10 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
+#include <boost/filesystem.hpp>
 #include <fstream>
 #include <iterator>
+#include <time.h>
 
 using boost::asio::ip::tcp;
 
@@ -19,23 +21,32 @@ int main()
     tcp::socket socket(io_service); //Создаем подключение, которое будет в ВЕЧНОМ цикле крутиться и ждать подключение клиента.
     std::cout << "socket - OK" << std::endl;
 
-    std::ifstream in_file_stream("test.txt", std::ios::binary); //Создаем файловый поток на чтение файла (бинарно).
+    std::ifstream in_file_stream("music1.mp3", std::ios::binary); //Создаем файловый поток на чтение файла (бинарно).
     std::cout << "File_Stream - OK" << std::endl;
 
-    std::vector <char> File_Buffer; //Создаем буфер для файла;
-    std::cout << "File_Stream - OK" << std::endl;
+    int file_size = boost::filesystem::file_size("music1.mp3");
+    std::cout << "File Size = " << file_size << " Bytes" << std::endl;
 
-    File_Buffer.insert(std::begin(File_Buffer), std::istreambuf_iterator <char> {in_file_stream}, std::istreambuf_iterator<char>{}); //Заполняем буфер данным файлом, открытым в бинарном режиме
-    std::cout << "File_Buffer inserted - OK" << std::endl;
+    boost::array<char,10000> File_Buffer; //Создаем буфер для файла;
+    std::cout << "File_Buffer - OK" << std::endl;
 
-    while(true)
+    int size_package=File_Buffer.size();
+    int size_send=0;
+
+    acceptor.accept(socket);
+
+    while (in_file_stream)
     {
-        acceptor.accept(socket); //Слушаем подключение. На сколько я понял, программа тут застрянет пока не дождется подключения клиента.
-        std::cout << "Client connected - OK" << std::endl;
-
-        boost::asio::write(socket,boost::asio::buffer(File_Buffer.data(),File_Buffer.size())); //пишем в подключенный сокет буфер (файл).
-        std::cout << "Message send - OK" << std::endl;
-        socket.close(); //Закрываем подключение
+        std::cout << "while - OK" << std::endl;
+        in_file_stream.read(File_Buffer.data(),size_package);
+        std::cout << "read - OK" << std::endl;
+        boost::asio::write(socket,boost::asio::buffer(File_Buffer));
+        usleep(200000);
+        std::cout << "sended: "<< size_send << std::endl;
     }
+
+    in_file_stream.close();
+    socket.close();
+
     return 0;
 }

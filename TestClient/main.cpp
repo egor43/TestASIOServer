@@ -3,6 +3,8 @@
 #include <boost/asio.hpp>
 #include <fstream>
 #include <string>
+#include <time.h>
+#include <boost/filesystem.hpp>
 
 using boost::asio::ip::tcp;
 
@@ -28,17 +30,31 @@ int main()
     client_socket.connect(client_endpoint); //Начинаем стучаться по указанному адресу
     std::cout << "connected - OK" << std::endl;
 
-    std::ofstream Out_File_Stream("OutTestFile.txt"); //Создаем поток для записи файла
+    std::ofstream Out_File_Stream("OutTestFile.mp3", std::ios::binary); //Создаем поток для записи файла
     std::cout << "Out_File_Stream - OK" << std::endl;
 
-    boost::array <char,256> buffer; //Буфер для хранения полученных данных
+    boost::array <char,5000> Buffer; //Буфер для хранения полученных данных
     std::cout << "Buffer - OK" << std::endl;
 
-    client_socket.read_some(boost::asio::buffer(buffer)); //Читаем ответ сервера
-    std::cout << "Read socket - OK" << std::endl;
 
-    Out_File_Stream << buffer.data(); //Пишем в файл полученный ответ
+    int len=0;
+
+    while(len<1922612)
+    {
+        len+=boost::asio::read(client_socket, boost::asio::buffer(Buffer),boost::asio::transfer_at_least(1)); //Читаем ответ сервера
+        for(int i=0; i<Buffer.size();i++)
+        {
+            Out_File_Stream<<Buffer[i];
+            //usleep(10);
+        }
+
+        std::cout << "Length: "<< len << std::endl;
+    }
+    //Out_File_Stream<<Buffer; //Эта хуйня возможно только все испортит
+    sleep(2);           //
+    Out_File_Stream.close();
+    client_socket.close();
     std::cout << "Write in cout - OK" << std::endl;
 
-return 0;
+    return 0;
 }
