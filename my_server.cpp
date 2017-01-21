@@ -7,8 +7,8 @@ void MyServer::Start_server(int port)
     boost::asio::ip::tcp::socket socket(io_service);
     boost::asio::ip::tcp::acceptor acceptor(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(),port));
     Start_acceptor(acceptor,socket);
-    //Get_files_in_resources(socket);
-    Send_file("video.mp4",socket);
+    Get_files_in_resources(socket);
+    //Send_file("video.mp4",socket);
 }
 
 void MyServer::Start_acceptor(boost::asio::ip::tcp::acceptor &acceptor, boost::asio::ip::tcp::socket &socket)
@@ -39,7 +39,8 @@ void MyServer::Get_files_in_resources(boost::asio::ip::tcp::socket &socket)
         {
             if(ent->d_type!=4)
             {
-                socket.write_some(boost::asio::buffer((std::string)ent->d_name));
+                boost::asio::write(socket,boost::asio::buffer((std::string)ent->d_name));
+                boost::asio::write(socket,boost::asio::buffer("%"));
             }
 
         }
