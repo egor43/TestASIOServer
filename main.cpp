@@ -21,13 +21,13 @@ int main()
     tcp::socket socket(io_service); //Создаем подключение, которое будет в ВЕЧНОМ цикле крутиться и ждать подключение клиента.
     std::cout << "socket - OK" << std::endl;
 
-    std::ifstream in_file_stream("music1.mp3", std::ios::binary); //Создаем файловый поток на чтение файла (бинарно).
+    std::ifstream in_file_stream("video.mp4", std::ios::binary); //Создаем файловый поток на чтение файла (бинарно).
     std::cout << "File_Stream - OK" << std::endl;
 
-    int file_size = boost::filesystem::file_size("music1.mp3");
+    int file_size = boost::filesystem::file_size("video.mp4");
     std::cout << "File Size = " << file_size << " Bytes" << std::endl;
 
-    boost::array<char,10000> File_Buffer; //Создаем буфер для файла;
+    boost::array<char,256> File_Buffer; //Создаем буфер для файла;
     std::cout << "File_Buffer - OK" << std::endl;
 
     int size_package=File_Buffer.size();
@@ -40,8 +40,7 @@ int main()
         std::cout << "while - OK" << std::endl;
         in_file_stream.read(File_Buffer.data(),size_package);
         std::cout << "read - OK" << std::endl;
-        boost::asio::write(socket,boost::asio::buffer(File_Buffer));
-        usleep(200000);
+        size_send+=boost::asio::write(socket,boost::asio::buffer(File_Buffer));
         std::cout << "sended: "<< size_send << std::endl;
     }
 

@@ -30,24 +30,22 @@ int main()
     client_socket.connect(client_endpoint); //Начинаем стучаться по указанному адресу
     std::cout << "connected - OK" << std::endl;
 
-    std::ofstream Out_File_Stream("OutTestFile.mp3", std::ios::binary); //Создаем поток для записи файла
+    std::ofstream Out_File_Stream("OutTestFile.mp4", std::ios::binary); //Создаем поток для записи файла
     std::cout << "Out_File_Stream - OK" << std::endl;
 
-    boost::array <char,5000> Buffer; //Буфер для хранения полученных данных
+    boost::array <char,256> Buffer; //Буфер для хранения полученных данных
     std::cout << "Buffer - OK" << std::endl;
 
 
     int len=0;
 
-    while(len<1922612)
+    while(len<40357079)
     {
         len+=boost::asio::read(client_socket, boost::asio::buffer(Buffer),boost::asio::transfer_at_least(1)); //Читаем ответ сервера
         for(int i=0; i<Buffer.size();i++)
         {
             Out_File_Stream<<Buffer[i];
-            //usleep(10);
         }
-
         std::cout << "Length: "<< len << std::endl;
     }
     //Out_File_Stream<<Buffer; //Эта хуйня возможно только все испортит
