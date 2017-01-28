@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.2.0, 2017-01-21T15:31:56. -->
+<!-- Written by QtCreator 4.2.0, 2017-01-28T18:40:07. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -252,6 +252,7 @@
     </valuelist>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguation.Title">TestClient</value>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.Arguments"></value>
+    <value type="bool" key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal">true</value>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory"></value>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory.default">/home/egor/Документы/Project/build-TestClient-Desktop_Qt_5_7_1_GCC_64bit-Отладка</value>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>

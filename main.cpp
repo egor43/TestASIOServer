@@ -8,7 +8,11 @@ int main()
 {
 
     MyServer server;
-    server.Start_server();
+    while(true)
+    {
+        server.Start_server();
+    }
+
 
 
 

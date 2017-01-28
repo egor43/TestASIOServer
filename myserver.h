@@ -22,6 +22,7 @@ private:
     void Send_files_in_resources(boost::asio::ip::tcp::socket &socket); //Отправка списка файлов, находящихся на сервере в папке "Resourses"
     void Start_acceptor(boost::asio::ip::tcp::acceptor &acceptor, boost::asio::ip::tcp::socket &socket); //Метод начинает прослушиватьь подключение
     void Send_file(std::string file_name, boost::asio::ip::tcp::socket &socket); //Отправка файла
+    void Send_filename(std::string file_name, boost::asio::ip::tcp::socket &socket); //Отправка имени файла
 public:
     void Start_server(int port=2102); //Запуск сервера
 };
