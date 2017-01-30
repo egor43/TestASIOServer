@@ -52,7 +52,7 @@ void MyServer::Start_acceptor(boost::asio::ip::tcp::acceptor &acceptor, boost::a
     acceptor.accept(socket); //Запускаем ожидание подключения
 }
 
-void MyServer::Send_file(std::string file_name, boost::asio::ip::tcp::socket &socket)
+void MyServer::Send_file(std::string &file_name, boost::asio::ip::tcp::socket &socket)
 {
     if(socket.is_open())
     {
@@ -103,7 +103,7 @@ void MyServer::Send_files_in_resources(boost::asio::ip::tcp::socket &socket)
     }
 }
 
-void MyServer::Send_filename(std::__cxx11::string file_name, boost::asio::ip::tcp::socket &socket)
+void MyServer::Send_filename(std::__cxx11::string &file_name, boost::asio::ip::tcp::socket &socket)
 {
     if(socket.is_open())
     {
