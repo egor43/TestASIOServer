@@ -5,11 +5,8 @@ using boost::asio::ip::tcp;
 int main()
 {
     MyClient client;
-    while(true)
-    {
-            client.Start_Client("127.0.0.1",2102);
-    }
-
+    while(client.Start_Client("127.0.0.1",2102)) {}
+    std::cout<<"Good Bye!"<<'\n';
 
 {
 //    std::cout << "Client - started!" << std::endl;

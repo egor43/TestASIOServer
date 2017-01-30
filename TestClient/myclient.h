@@ -12,14 +12,15 @@
 class MyClient
 {
 private:
-    std::string file_name="File1.mp3";
-    void Start_Connect(boost::asio::ip::tcp::endpoint &client_endpoint, boost::asio::ip::tcp::socket &client_socket);
-    void Print_FileList(boost::asio::ip::tcp::socket &client_socket);
-    void Send_NumberFile(boost::asio::ip::tcp::socket &client_socket);
-    void Get_File(boost::asio::ip::tcp::socket &client_socket, std::string &file_name);
-    void Get_FileName(boost::asio::ip::tcp::socket &client_socket);
+    std::string file_name="File"; //Переменная для хрпнения имени файла, инициализированная значением по умолчанию.
+    void Start_Connect(boost::asio::ip::tcp::endpoint &client_endpoint, boost::asio::ip::tcp::socket &client_socket); //Запускает подключение к серверу
+    void Print_FileList(boost::asio::ip::tcp::socket &client_socket); //Выводит на консоль список файлов, хранящихся на сервере
+    void Send_NumberFile(boost::asio::ip::tcp::socket &client_socket); //Отправляет номер файла серверу для дальнейшего его получения
+    void Get_File(boost::asio::ip::tcp::socket &client_socket, std::string &file_name); //Получает файл от сервера
+    void Get_FileName(boost::asio::ip::tcp::socket &client_socket); //Получает имя файла от сервера
+    bool Exit_Menu(); //Меню выхода из клиента
 public:
-    void Start_Client(std::string &&ip_adress, int port);
+    bool Start_Client(std::string &&ip_adress, int port); //Запуск клиента
 };
 
 #endif // MYCLIENT
