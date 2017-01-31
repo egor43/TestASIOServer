@@ -28,15 +28,11 @@ std::string MyServer::Get_Fille_Name(boost::asio::ip::tcp::socket &socket)
     if(socket.is_open())
     {
         boost::array <char,10> Buffer; //Массив нужен небольшой, т.к. отправляется только номер файла
-        int index=0; //Индекс файла
+        int index=0;
         try
         {
-            boost::asio::read(socket, boost::asio::buffer(Buffer),boost::asio::transfer_at_least(1)); //Читаем ответ клиента (номер файла).int index=0;
-            for(int i=0;i<Buffer.size();i++)
-            {
-                    if(Buffer[i]!='%') index+=Buffer[i]-'0'; //С помощью этой магии мы получаем ЦИФРУ (% в if() нужен для отделения мусора от значимой части)
-                    else  break;
-            }
+            boost::asio::read(socket, boost::asio::buffer(Buffer),boost::asio::transfer_all()); //Читаем ответ клиента (номер файла).
+            index=std::atoi(Buffer.data());
             if(index<List_of_Files.size()) return List_of_Files[index]; //Если номер файла корректен dозвращаем название файла
             else throw ("Файл не выбран"); //Иначе Шлем все нахуй!
         }
@@ -54,12 +50,11 @@ void MyServer::Start_acceptor(boost::asio::ip::tcp::acceptor &acceptor, boost::a
 
 void MyServer::Send_file(std::string &file_name, boost::asio::ip::tcp::socket &socket)
 {
-    if(socket.is_open())
-    {
         try
         {
-            std::ifstream in_file_stream(file_name, std::ios::binary); //Открываем в файловом потоке файл "file_name"
-            int file_size = boost::filesystem::file_size(file_name); //Узнаем размер файла
+            std::string file_path="./Resourses/"+file_name;
+            std::ifstream in_file_stream(file_path, std::ios::binary); //Открываем в файловом потоке файл "file_name"
+            int file_size = boost::filesystem::file_size(file_path); //Узнаем размер файла
             boost::array<char,256> File_Buffer; //Создаем буфер для хранения пакетов
             int size_package=File_Buffer.size(); //Узнаем размер буфера
             while (in_file_stream) //Пока файловый поток считывает файл
@@ -74,7 +69,6 @@ void MyServer::Send_file(std::string &file_name, boost::asio::ip::tcp::socket &s
         {
             throw("Warning Send_file"); //Если произошел сбой
         }
-    }
 }
 
 void MyServer::Send_files_in_resources(boost::asio::ip::tcp::socket &socket)
@@ -92,9 +86,9 @@ void MyServer::Send_files_in_resources(boost::asio::ip::tcp::socket &socket)
                     boost::asio::write(socket,boost::asio::buffer((std::string)ent->d_name)); //Отправляем название файла
                     MyServer::List_of_Files.insert(List_of_Files.end(),(std::string)ent->d_name); //Записываем имена файлов в хранилище
                     boost::asio::write(socket,boost::asio::buffer("%")); //Отправляем разделитель, т.к. TCP протокол сам решает когда нужно отправить очередной пакет. В следствие чего там может оказаться мусор (он там всегда есть) и он может отправить все за один раз и за несколько. Разделитель принимается клиентом и делает перенос строки.
-                }
-
+                }              
             }
+              boost::asio::write(socket,boost::asio::buffer("//////"));
         }
         catch(...)
         {
@@ -110,8 +104,6 @@ void MyServer::Send_filename(std::__cxx11::string &file_name, boost::asio::ip::t
         try
         {
             boost::asio::write(socket,boost::asio::buffer(file_name+"%")); //Отправляем название файла и разделитель (%)
-            //boost::asio::write(socket,boost::asio::buffer("%")); //Отправляем разделитель, т.к. TCP протокол сам решает когда нужно отправить очередной пакет. В следствие чего там может оказаться мусор (он там всегда есть) и он может отправить все за один раз и за несколько. Разделитель принимается клиентом и делает перенос строки.
-
         }
         catch(...)
         {

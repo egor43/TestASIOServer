@@ -8,6 +8,7 @@ int main()
 {
 
     MyServer server;
+    std::cout<<"Server start..."<<'\n';
     while(true)
     {
         server.Start_server();

@@ -29,7 +29,7 @@ bool MyClient::Start_Client(std::__cxx11::string &&ip_adress, int port)
     {
         std::cout<<"Возникла ошибка"<<'\n';
     }
-    return Exit_Menu();
+    return Exit_Menu(); //В любом случае вызываем метод "меню выхода".
 }
 
 void MyClient::Start_Connect(boost::asio::ip::tcp::endpoint &client_endpoint, boost::asio::ip::tcp::socket &client_socket)
@@ -48,16 +48,34 @@ void MyClient::Print_FileList(boost::asio::ip::tcp::socket &client_socket)
 
     try
     {
-        int package_length=0;
-        boost::array <char,34> Buffer_system;
-        while(package_length<34)
+        int count_end_filelist=0;
+        boost::array <char,5> Buffer_system; //Создали буфер для хранения ответа от сервера.
+        while(true)
         {
-            package_length+=boost::asio::read(client_socket, boost::asio::buffer(Buffer_system),boost::asio::transfer_at_least(1)); //Читаем ответ со списком файлов сервера
-            for(int i=0; i<package_length;i++)
+            count_end_filelist=0;
+            boost::asio::read(client_socket, boost::asio::buffer(Buffer_system),boost::asio::transfer_all()); //Читаем ответ со списком файлов сервера
+            for(int i=0; i<Buffer_system.size();i++) //В теле цикла выводим на экран список файлов сервера
             {
-                if(Buffer_system[i]=='%') std::cout<<std::endl;
-                else if(Buffer_system[i]!='\0') std::cout<<Buffer_system[i];
+                switch(Buffer_system[i])
+                {
+                    case '%':
+                    {
+                        std::cout<<std::endl; //Когда нашли разделитель, переносим строчку
+                        break;
+                    }
+                    case '/':
+                    {
+                        count_end_filelist++;
+                        break;
+                    }
+                    default:
+                    {
+                        std::cout<<Buffer_system[i]; //Выводим посимвольно имя файла
+                        break;
+                    }
+                }
             }
+            if(count_end_filelist>1) break;
         }
     }
     catch (...)
@@ -70,11 +88,11 @@ void MyClient::Send_NumberFile(boost::asio::ip::tcp::socket &client_socket)
 {
     try
     {
-        boost::array<std::string,1> n;
+        boost::array<std::string,1> n; //Создали буфер для хранения номера файла.
         std::cout<<"Enter number:" <<'\n';
-        std::cin>>n[0];
-        boost::asio::write(client_socket,boost::asio::buffer(n[0]));
-        boost::asio::write(client_socket,boost::asio::buffer("%"));
+        std::cin>>n[0]; //Записали номер файла в буфер
+        boost::asio::write(client_socket,boost::asio::buffer(n[0])); //Отправляем номер файла
+        boost::asio::write(client_socket,boost::asio::buffer("%%%%%%%%%%")); //Отправляем разделитель, чтобы сервер смог разобраться, где необходимая информация, а где мусор.
     }
     catch(...)
     {
@@ -86,15 +104,14 @@ void MyClient::Get_File(boost::asio::ip::tcp::socket &client_socket, std::string
 {
     std::ofstream Out_File_Stream(file_name, std::ios::binary); //Поток ввода в файл
     boost::array <char,256> Buffer; //Буфер для хранения полученных данных
-    int package_length=0;
     try
     {
         while(true)
         {
-            package_length+=boost::asio::read(client_socket, boost::asio::buffer(Buffer),boost::asio::transfer_at_least(1)); //Читаем ответ сервера
-            for(int i=0; i<Buffer.size();i++)
+            boost::asio::read(client_socket, boost::asio::buffer(Buffer),boost::asio::transfer_all()); //Читаем ответ сервера
+            for(int i=0; i<Buffer.size();i++) //В теле цикла поэлементно записываем информацию в поток.
             {
-                Out_File_Stream<<Buffer[i];
+                Out_File_Stream<<Buffer[i]; //Если так не делать, то часть информации пропадает
             }
         }
     }
@@ -107,23 +124,26 @@ void MyClient::Get_File(boost::asio::ip::tcp::socket &client_socket, std::string
         throw("Warning Get_File");
     }
 
-    Out_File_Stream.close();
-    client_socket.close();
+    Out_File_Stream.close(); //Закрываем поток вывода в файл
+    client_socket.close(); //Закрываем соединение
 }
 
 void MyClient::Get_FileName(boost::asio::ip::tcp::socket &client_socket)
 {
     try
     {
-        int package_length=0;
-        boost::array <char,34> Buffer;
-        package_length+=boost::asio::read(client_socket, boost::asio::buffer(Buffer),boost::asio::transfer_at_least(1));
-        file_name="";
-        for(int i=0; i<package_length;i++)
+        boost::asio::streambuf Buffer; //Создали буфер для хранения информации полученной от сервера
+        boost::asio::read_until(client_socket, Buffer,'%'); //Получаем ответ от сервера
+        file_name.clear(); //Очищаем переменную имени cоздаваемого файла
+        std::istream stream_in_string (&Buffer);
+        std::string string_name="";
+        stream_in_string >> string_name;
+        for(char i : string_name)
         {
-            if(Buffer[i]!='%') file_name+=Buffer[i];
-            else break;
+            if(i=='%') break;
+            if(i!='\0' && i!='/') file_name+=i;
         }
+        std::cout<<file_name<<'\n';
     }
     catch(...)
     {
