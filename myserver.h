@@ -17,14 +17,14 @@
 class MyServer
 {
 private:
-    std::vector<std::string> List_of_Files; //Хранилище для имен файлов
+    std::vector<std::string> list_of_files; //Хранилище для имен файлов
     std::string Get_Fille_Name(boost::asio::ip::tcp::socket &socket); //Получаем от клиента имя файла, которое необходимо отправить
-    void Send_files_in_resources(boost::asio::ip::tcp::socket &socket); //Отправка списка файлов, находящихся на сервере в папке "Resourses"
-    void Start_acceptor(boost::asio::ip::tcp::acceptor &acceptor, boost::asio::ip::tcp::socket &socket); //Метод начинает прослушиватьь подключение
-    void Send_file(std::string &file_name, boost::asio::ip::tcp::socket &socket); //Отправка файла
-    void Send_filename(std::string &file_name, boost::asio::ip::tcp::socket &socket); //Отправка имени файла
+    void Send_Resources_List(boost::asio::ip::tcp::socket &socket); //Отправка списка файлов, находящихся на сервере в папке "Resourses"
+    void Start_Acceptor(boost::asio::ip::tcp::acceptor &acceptor, boost::asio::ip::tcp::socket &socket); //Метод начинает прослушиватьь подключение
+    void Send_File(std::string &file_name, boost::asio::ip::tcp::socket &socket); //Отправка файла
+    void Send_Filename(std::string &file_name, boost::asio::ip::tcp::socket &socket); //Отправка имени файла
 public:
-    void Start_server(int port=2102); //Запуск сервера
+    void Start_Server(int port=2102); //Запуск сервера
 };
 
 #endif // MYSERVER_H

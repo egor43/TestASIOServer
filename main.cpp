@@ -11,7 +11,7 @@ int main()
     std::cout<<"Server start..."<<'\n';
     while(true)
     {
-        server.Start_server();
+        server.Start_Server();
     }
 
 
