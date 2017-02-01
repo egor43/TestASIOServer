@@ -25,7 +25,11 @@ bool MyClient::Start_Client(std::__cxx11::string &&ip_adress, int port)
         Get_FileName(client_socket); //Получаем имя файла
         Get_File(client_socket,file_name); //Получаем файл
     }
-    catch(...)
+    catch(const char* er) //Сюда придут все исключения, которые мы викинули сами для дальнейшей обработки
+    {
+        if(er!="0") std::cout<<"Возникла ошибка"<<'\n'; //Если в сообщении приходит "0" - значит мы уже оповестили пользователя об ошибке, если приходит иное - выводим сообщение.
+    }
+    catch(...) //Для ловли всего остального
     {
         std::cout<<"Возникла ошибка"<<'\n';
     }
@@ -37,6 +41,15 @@ void MyClient::Start_Connect(boost::asio::ip::tcp::endpoint &client_endpoint, bo
     try
     {
         client_socket.connect(client_endpoint); //Начинаем стучаться по указанному адресу
+    }
+    catch(boost::system::system_error &er)
+    {
+        boost::system::error_code error = er.code(); //Получаем исключение
+        if(error.value()==111)
+        {
+            std::cout<<"Не удалось подключиться к серверу. Попробуйте перезапустить клиент."<<'\n';
+            throw("0");
+        }
     }
     catch(...)
     {
@@ -80,6 +93,15 @@ void MyClient::Print_FileList(boost::asio::ip::tcp::socket &client_socket)
             if(count_end_filelist>1) break; //Больше 1 сделано на всякий случай.
         }
     }
+    catch(boost::system::system_error &er)
+    {
+        boost::system::error_code error = er.code(); //Получаем исключение
+        if(error.value()==104)
+        {
+            std::cout<<"Соединение сброшено. Попробуйте перезапустить клиент"<<'\n';
+            throw("0");
+        }
+    }
     catch (...)
     {
         throw("Warning Print_FileList");
@@ -96,6 +118,15 @@ void MyClient::Send_NumberFile(boost::asio::ip::tcp::socket &client_socket)
         std::cin>>buffer[0]; //Записали номер файла в буфер
         boost::asio::write(client_socket,boost::asio::buffer(buffer[0])); //Отправляем номер файла
         boost::asio::write(client_socket,boost::asio::buffer("%%%%%%%%%%")); //Отправляем разделитель, чтобы сервер смог разобраться, где необходимая информация, а где мусор.
+    }
+    catch(boost::system::system_error &er)
+    {
+        boost::system::error_code error = er.code();  //Получаем исключение
+        if(error.value()==32)
+        {
+            std::cout<<"Сервер не отвечает. Попробуйте перезапустить клиент."<<'\n';
+            throw("0");
+        }
     }
     catch(...)
     {
@@ -118,9 +149,13 @@ void MyClient::Get_File(boost::asio::ip::tcp::socket &client_socket, std::string
             }
         }
     }
-    catch(boost::system::system_error error)
+    catch(boost::system::system_error &er)
     {
-        std::cout<<"Файл загружен"<<'\n';
+        boost::system::error_code error = er.code(); //Получаем исключение
+        if(error.value()==104)
+        {
+            std::cout<<"Передача завершена. Соединение закрыто."<<'\n';
+        }
     }
     catch(...)
     {
@@ -136,7 +171,7 @@ void MyClient::Get_FileName(boost::asio::ip::tcp::socket &client_socket)
     try
     {
         boost::asio::streambuf buffer; //Создали буфер для хранения информации полученной от сервера
-        boost::asio::read_until(client_socket, buffer,'%'); //Получаем ответ от сервера
+        boost::asio::read_until(client_socket, buffer,'%'); //Получаем ответ от сервера, заполняя весь буфер. Это необходимо для очистки соединения от мусора, т.к. следующим действием будет передаваться файл.
         file_name.clear(); //Очищаем переменную имени cоздаваемого файла
         std::istream stream_in_string (&buffer); //Для получения строки из буфера создаем поток
         std::string string_name=""; //Временная переменная для хранения информации из буфера
@@ -145,6 +180,15 @@ void MyClient::Get_FileName(boost::asio::ip::tcp::socket &client_socket)
         {
             if(i=='%') break;
             if(i!='\0' && i!='/') file_name+=i;
+        }
+    }
+    catch(boost::system::system_error &er)
+    {
+        boost::system::error_code error = er.code(); //Получаем исключение
+        if(error.value()==104)
+        {
+            std::cout<<"Соединение сброшено. Попробуйте перезапустить клиент"<<'\n';
+            throw("0");
         }
     }
     catch(...)

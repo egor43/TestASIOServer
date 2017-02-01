@@ -18,8 +18,13 @@ void MyServer::Start_Server(int port)
     }
     catch(const char* er)
     {
-        std::cout<<er<<'\n';
-        std::cout<<"соединение сброшено. Жду следующего подключения..."<<'\n';
+        std::cout<<er<<'\n'; //Для логов. Т.к. в выбрасываемом исключении указано имя метода, который выкинул ошибку.
+        std::cout<<"Соединение сброшено. Жду следующего подключения..."<<'\n';
+    }
+
+    catch(...)
+    {
+        std::cout<<"Произошла ошибка."<<'\n';
     }
 }
 
@@ -34,7 +39,16 @@ std::string MyServer::Get_Fille_Name(boost::asio::ip::tcp::socket &socket)
         if(index<list_of_files.size()) return list_of_files[index]; //Если номер файла корректен dозвращаем название файла
         else throw ("Файл не выбран"); //Иначе Шлем все нахуй!
     }
-    catch (...)
+    catch(boost::system::system_error &er)
+    {
+        boost::system::error_code error = er.code(); //Получаем исключение
+        if(error.value()==104)
+        {
+            std::cout<<"Клиент сбросил соединение"<<'\n';
+            throw("Warning Get_Fille_Name");
+        }
+    }
+    catch(...)
     {
         throw("Warning Get_Fille_Name"); //Если произошел сбой
     }
@@ -42,7 +56,14 @@ std::string MyServer::Get_Fille_Name(boost::asio::ip::tcp::socket &socket)
 
 void MyServer::Start_Acceptor(boost::asio::ip::tcp::acceptor &acceptor, boost::asio::ip::tcp::socket &socket)
 {
-    acceptor.accept(socket); //Запускаем ожидание подключения
+    try
+    {
+        acceptor.accept(socket); //Запускаем ожидание подключения
+    }
+    catch(...)
+    {
+        throw("Warning Start_Acceptor"); //Если произошел сбой в ожидании подключения. Тут я вообще ничего поймать не смог, поэтому кидаю общее исключение.
+    }
 }
 
 void MyServer::Send_File(std::string &file_name, boost::asio::ip::tcp::socket &socket)
@@ -60,6 +81,15 @@ void MyServer::Send_File(std::string &file_name, boost::asio::ip::tcp::socket &s
         }
         in_file_stream.close(); // Закрываем файловый поток
         socket.close();         // Закрываем подключение
+    }
+    catch(boost::system::system_error &er)
+    {
+        boost::system::error_code error = er.code(); //Получаем исключение
+        if(error.value()==32)
+        {
+            std::cout<<"Клиент сбросил соединение"<<'\n';
+            throw("Warning Send_File");
+        }
     }
     catch(...)
     {
@@ -85,6 +115,15 @@ void MyServer::Send_Resources_List(boost::asio::ip::tcp::socket &socket)
         }
         boost::asio::write(socket,boost::asio::buffer("//////")); //Для указания конца списка отправляем строку из символов, которые не могут встретиться в названии файла.
     }
+    catch(boost::system::system_error &er)
+    {
+        boost::system::error_code error = er.code(); //Получаем исключение
+        if(error.value()==32)
+        {
+            std::cout<<"Клиент сбросил соединение"<<'\n';
+            throw("Warning Send_files_in_resources");
+        }
+    }
     catch(...)
     {
         throw("Warning Send_files_in_resources"); //Если произошел сбой
@@ -100,6 +139,6 @@ void MyServer::Send_Filename(std::__cxx11::string &file_name, boost::asio::ip::t
     }
     catch(...)
     {
-        throw("Warning Send_filename"); //Если произошел сбой
+        throw("Warning Send_filename"); //Если произошел сбой. Общая обработка, т.к. при отладке метод записи не выкидывал исключений буста.
     }
 }

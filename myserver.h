@@ -14,6 +14,10 @@
 #include <stdio.h>
 #include <stdexcept>
 
+// Проект "Клиент - Сервер. Передача файлов".
+// Серверная часть "MyServer"
+// Мышко Егор Викторович 01.02.2017г.
+
 class MyServer
 {
 private:

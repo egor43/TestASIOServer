@@ -9,6 +9,10 @@
 #include <time.h>
 #include <boost/filesystem.hpp>
 
+// Проект "Клиент - Сервер. Передача файлов".
+// Клиентская часть "MyClient"
+// Мышко Егор Викторович 01.02.2017г.
+
 class MyClient
 {
 private:
