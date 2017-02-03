@@ -77,8 +77,9 @@ void MyServer::Send_File(std::string &file_name, boost::asio::ip::tcp::socket &s
         while (in_file_stream) //Пока файловый поток считывает файл
         {
             in_file_stream.read(file_buffer.data(),size_package); //Записываем в буфер порцию данных
-            boost::asio::write(socket,boost::asio::buffer(file_buffer)); //Отправляем даные
+            boost::asio::write(socket,boost::asio::buffer(file_buffer),boost::asio::transfer_all()); //Отправляем даные
         }
+        sleep(2); //Даем время клиенту обработать полученные данные
         in_file_stream.close(); // Закрываем файловый поток
         socket.close();         // Закрываем подключение
     }

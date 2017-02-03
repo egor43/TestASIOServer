@@ -142,7 +142,7 @@ void MyClient::Get_File(boost::asio::ip::tcp::socket &client_socket, std::string
     {
         while(true)
         {
-            boost::asio::read(client_socket, boost::asio::buffer(buffer),boost::asio::transfer_all()); //Читаем ответ сервера
+            boost::asio::read(client_socket, boost::asio::buffer(buffer),boost::asio::transfer_at_least(1)); //Читаем ответ сервера
             for(int i=0; i<buffer.size();i++) //В теле цикла поэлементно записываем информацию в поток.
             {
                 out_file_stream<<buffer[i]; //Если так не делать, то часть информации пропадает
@@ -154,14 +154,14 @@ void MyClient::Get_File(boost::asio::ip::tcp::socket &client_socket, std::string
         boost::system::error_code error = er.code(); //Получаем исключение
         if(error.value()==104)
         {
+            sleep(2); //Даем время клиенту все записать
             std::cout<<"Передача завершена. Соединение закрыто."<<'\n';
         }
     }
     catch(...)
     {
         throw("Warning Get_File");
-    }
-
+    }    
     out_file_stream.close(); //Закрываем поток вывода в файл
     client_socket.close(); //Закрываем соединение
 }
