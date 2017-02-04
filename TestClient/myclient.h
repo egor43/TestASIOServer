@@ -13,8 +13,11 @@
 // Клиентская часть "MyClient"
 // Мышко Егор Викторович 01.02.2017г.
 
-//Доделать:
-// - Вынести метод Exit_Menu в main, т.к. он не должен находится в классе клиента. (Подобные взаиммодействия не должны находится в классах подобного рода)
+// Задачи:
+// - Дописать комменты.
+// - Почистить код.
+// - Обработать ошибки.
+// - Возможно, что-нибудь можно запихать в методы.
 
 class MyClient
 {
@@ -25,9 +28,8 @@ private:
     void Send_NumberFile(boost::asio::ip::tcp::socket &client_socket); //Отправляет номер файла серверу для дальнейшего его получения
     void Get_File(boost::asio::ip::tcp::socket &client_socket, std::string &file_name); //Получает файл от сервера
     void Get_FileName(boost::asio::ip::tcp::socket &client_socket); //Получает имя файла от сервера
-    bool Exit_Menu(); //Меню выхода из клиента
 public:
-    bool Start_Client(std::string &&ip_adress, int port); //Запуск клиента
+    void Start_Client(std::string &&ip_adress, int port); //Запуск клиента
 };
 
 #endif // MYCLIENT

@@ -1,16 +1,6 @@
 #include "myclient.h"
 
-bool MyClient::Exit_Menu()
-{
-    std::cout<<"Для выхода из программы нажмите: q "<<'\n';
-    char character=' ';
-    std::cin>>character; //Считываем символ
-    std::cin.clear(); //Очищаем поток ввода (на всякий случай)
-    if(character=='q') return false;
-    else return true;
-}
-
-bool MyClient::Start_Client(std::__cxx11::string &&ip_adress, int port)
+void MyClient::Start_Client(std::__cxx11::string &&ip_adress, int port)
 {
     try
     {
@@ -33,7 +23,6 @@ bool MyClient::Start_Client(std::__cxx11::string &&ip_adress, int port)
     {
         std::cout<<"Возникла ошибка"<<'\n';
     }
-    return Exit_Menu(); //В любом случае вызываем метод "меню выхода".
 }
 
 void MyClient::Start_Connect(boost::asio::ip::tcp::endpoint &client_endpoint, boost::asio::ip::tcp::socket &client_socket)
@@ -137,16 +126,19 @@ void MyClient::Send_NumberFile(boost::asio::ip::tcp::socket &client_socket)
 void MyClient::Get_File(boost::asio::ip::tcp::socket &client_socket, std::string &file_name)
 {
     std::ofstream out_file_stream(file_name, std::ios::binary); //Поток ввода в файл
-    boost::array <char,256> buffer; //Буфер для хранения полученных данных
+    boost::array<char,256> buffer; //Буфер для получения информации от сервера
+    //int count=0; //Переменная для подсчета полученных данных (для отладки)
     try
     {
+        std::cout<<"Началась загрузка..."<<'\n';
         while(true)
         {
-            boost::asio::read(client_socket, boost::asio::buffer(buffer),boost::asio::transfer_at_least(1)); //Читаем ответ сервера
-            for(int i=0; i<buffer.size();i++) //В теле цикла поэлементно записываем информацию в поток.
+            boost::asio::read(client_socket, boost::asio::buffer(buffer,256),boost::asio::transfer_all()); //Читаем ответ сервера
+            for(int i=0; i<buffer.size();i++)
             {
-                out_file_stream<<buffer[i]; //Если так не делать, то часть информации пропадает
+                out_file_stream<<buffer[i]; //Пишем информацию из буфера в файл
             }
+            //std::cout<<count<<'\n'; //Для отладки
         }
     }
     catch(boost::system::system_error &er)
@@ -154,16 +146,16 @@ void MyClient::Get_File(boost::asio::ip::tcp::socket &client_socket, std::string
         boost::system::error_code error = er.code(); //Получаем исключение
         if(error.value()==104)
         {
-            sleep(2); //Даем время клиенту все записать
+            sleep(1); //Даем время клиенту все записать
             std::cout<<"Передача завершена. Соединение закрыто."<<'\n';
         }
     }
     catch(...)
     {
         throw("Warning Get_File");
-    }    
-    out_file_stream.close(); //Закрываем поток вывода в файл
+    }
     client_socket.close(); //Закрываем соединение
+    out_file_stream.close(); //Закрываем поток вывода в файл    
 }
 
 void MyClient::Get_FileName(boost::asio::ip::tcp::socket &client_socket)
@@ -171,7 +163,7 @@ void MyClient::Get_FileName(boost::asio::ip::tcp::socket &client_socket)
     try
     {
         boost::asio::streambuf buffer; //Создали буфер для хранения информации полученной от сервера
-        boost::asio::read_until(client_socket, buffer,'%'); //Получаем ответ от сервера, заполняя весь буфер. Это необходимо для очистки соединения от мусора, т.к. следующим действием будет передаваться файл.
+        boost::asio::read(client_socket, buffer,boost::asio::transfer_at_least(128)); //Получаем ответ от сервера, заполняя 128 байт, т.к. сервер выделяет именно такое колличество информации на имя файла. (Если эта цифра не совпадет с сервером - файл будет передаваться иногда не полностью, т.к. данные файла улетят в этот метод и он их отсечет разделителем)
         file_name.clear(); //Очищаем переменную имени cоздаваемого файла
         std::istream stream_in_string (&buffer); //Для получения строки из буфера создаем поток
         std::string string_name=""; //Временная переменная для хранения информации из буфера
@@ -181,6 +173,7 @@ void MyClient::Get_FileName(boost::asio::ip::tcp::socket &client_socket)
             if(i=='%') break;
             if(i!='\0' && i!='/') file_name+=i;
         }
+        std::cout<<"Вы выбрали: " <<file_name<<'\n';
     }
     catch(boost::system::system_error &er)
     {

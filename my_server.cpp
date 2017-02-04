@@ -70,16 +70,19 @@ void MyServer::Send_File(std::string &file_name, boost::asio::ip::tcp::socket &s
 {
     try
     {
+        sleep(5); //Задержка перед отправкой, чтобы данные не "улетели" раньше чем клиент перейдет к методу приема данных (иначе он просто их проигнорирует и файл будет передан как попало)
         std::string file_path="./Resourses/"+file_name; //Переменная для хранения пути файла. Собирается из имени папки и имени файла.
         std::ifstream in_file_stream(file_path, std::ios::binary); //Открываем в файловом потоке файл "file_name"
         boost::array<char,256> file_buffer; //Создаем буфер для хранения пакетов
         int size_package=file_buffer.size(); //Узнаем размер буфера
+        //int size_sended=0; //Переменная для хранения размера переданной информации (для отладки)
         while (in_file_stream) //Пока файловый поток считывает файл
         {
             in_file_stream.read(file_buffer.data(),size_package); //Записываем в буфер порцию данных
-            boost::asio::write(socket,boost::asio::buffer(file_buffer),boost::asio::transfer_all()); //Отправляем даные
+            socket.write_some(boost::asio::buffer(file_buffer,256));
+            //std::cout<<size_sended<<'\n'; //Вывод колличества переданной информации (для отладки)
+            usleep(5); //Задержка для того, чтобы клиент успел обработать данные
         }
-        sleep(2); //Даем время клиенту обработать полученные данные
         in_file_stream.close(); // Закрываем файловый поток
         socket.close();         // Закрываем подключение
     }
@@ -136,7 +139,20 @@ void MyServer::Send_Filename(std::__cxx11::string &file_name, boost::asio::ip::t
 
     try
     {
-        boost::asio::write(socket,boost::asio::buffer(file_name+"%")); //Отправляем название файла и разделитель (%)
+        boost::array<char,128> buffer; //Буфер для хранения имени файла и разделителя '%'
+        for(int i=0; i<buffer.size();i++) //В теле цикла мы записываем в буфер имя файла и разделитель, как только полезная информация записана - выходим из цикла
+        {
+            if(i<file_name.length())
+            {
+                buffer[i]=file_name[i];
+            }
+            else
+            {
+                buffer[i]='%';
+                break;
+            }
+        }
+        boost::asio::write(socket,boost::asio::buffer(buffer),boost::asio::transfer_all()); //Отправляем буфер полностью
     }
     catch(...)
     {
